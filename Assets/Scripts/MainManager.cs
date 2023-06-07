@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using TMPro;
 
 public class MainManager : MonoBehaviour
 {
@@ -18,7 +19,10 @@ public class MainManager : MonoBehaviour
     
     private bool m_GameOver = false;
 
-    
+    public Text scoreText;
+    private string m_name;
+
+
     // Start is called before the first frame update
     void Start()
     {
@@ -36,8 +40,22 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+        UpdateUIText();
     }
+    public void Awake()
+    {
 
+        if (DataManager.Instance.currentName.Length <= 1)
+        {
+            m_name = "Anonymous";
+        }
+        else
+        {
+            m_name = DataManager.Instance.currentName;
+        }
+        //Debug.Log(m_name);
+        ScoreText.text = $"Score : {m_name} : {m_Points}";
+    }
     private void Update()
     {
         if (!m_Started)
@@ -59,18 +77,36 @@ public class MainManager : MonoBehaviour
             {
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                SceneManager.LoadScene(0);
+            }
         }
     }
 
     void AddPoint(int point)
     {
         m_Points += point;
-        ScoreText.text = $"Score : {m_Points}";
+        // Debug.Log(DataManager.Instance.currentName);
+        // Debug.Log(DataManager.Instance.currentName.Length.ToString());
+        //m_name = (DataManager.Instance.currentName.Length <= 1) ? DataManager.Instance.currentName : "Anonymous";
+        ScoreText.text = $"Score : {m_name} : {m_Points}";
     }
 
     public void GameOver()
     {
         m_GameOver = true;
+        DataManager.Instance.UpdateHighScore(m_Points);
+        UpdateUIText();
         GameOverText.SetActive(true);
+    }
+    public void BackToMenu()
+    {
+        SceneManager.LoadScene(0);
+    }
+    public void UpdateUIText()
+    {
+        string name = DataManager.Instance.highScoreName.Length<=1 ? DataManager.Instance.highScoreName : "Anonymous";
+        scoreText.text = "Best Score: " + DataManager.Instance.highScoreName + " : " + DataManager.Instance.highScore.ToString();
     }
 }
